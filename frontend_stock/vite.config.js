@@ -11,10 +11,4 @@ export default defineConfig({
       "@utils": "/src/utils",
     },
   },
-  server: {
-    proxy: {
-      "/save-stats": "http://localhost-backend",
-      "/get-stats": "http://localhost-backend",
-    },
-  },
 });
