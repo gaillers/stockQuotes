@@ -14,13 +14,14 @@ const App = () => {
   const [quotes, setQuotes] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const startTimeRef = useRef(null);
-  const [isSendingStats, setIsSendingStats] = useState(false);
   const lastStatsRef = useRef(null);
+  const isFetchingStatsRef = useRef(false); 
 
   const handleStart = useCallback(() => {
     console.log("Starting WebSocket connection");
+    
     if (socketRef.current) {
-      socketRef.current.close();
+      socketRef.current.close(); 
     }
 
     startTimeRef.current = Date.now();
@@ -42,19 +43,24 @@ const App = () => {
             updatedQuotes,
             startTimeRef.current
           );
+
           if (
             JSON.stringify(calculatedStats) !==
             JSON.stringify(lastStatsRef.current)
           ) {
             setStats(calculatedStats);
-            if (!isSendingStats) {
-              setIsSendingStats(true);
-              sendStatsToBackend(calculatedStats).finally(() =>
-                setIsSendingStats(false)
-              );
-              lastStatsRef.current = calculatedStats;
+            lastStatsRef.current = calculatedStats;
+
+            if (!isFetchingStatsRef.current) {
+              isFetchingStatsRef.current = true;
+              sendStatsToBackend(calculatedStats)
+                .catch((error) => console.error("Error sending stats:", error))
+                .finally(() => {
+                  isFetchingStatsRef.current = false;
+                });
             }
           }
+
           socketRef.current.close();
         }
         return updatedQuotes;
@@ -69,7 +75,7 @@ const App = () => {
       console.log("WebSocket connection closed");
       setIsConnected(false);
     };
-  }, [quoteCount, isSendingStats]);
+  }, [quoteCount]);
 
   const handleQuoteCountChange = (e) => {
     setQuoteCount(Number(e.target.value));
@@ -94,6 +100,7 @@ const App = () => {
 };
 
 export default App;
+
 const AppContainer = styled.div`
   font-family: Arial, sans-serif;
   text-align: center;
