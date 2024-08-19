@@ -10,20 +10,22 @@ import { calculateStatistics } from "@utils/utils";
 const App = () => {
   const [quoteCount, setQuoteCount] = useState(100);
   const [stats, setStats] = useState(null);
-  const socketRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [quotes, setQuotes] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const startTimeRef = useRef(null);
   const lastStatsRef = useRef(null);
   const isFetchingStatsRef = useRef(false);
+  const socketRef = useRef(null);
 
   const handleStart = useCallback(() => {
     console.log("Starting WebSocket connection");
-    
+
     if (socketRef.current) {
-      socketRef.current.close(); 
+      socketRef.current.close();
     }
 
+    setIsLoading(true);
     startTimeRef.current = Date.now();
     socketRef.current = new WebSocket(
       "wss://trade.termplat.com:8800/?password=1234"
@@ -61,7 +63,7 @@ const App = () => {
             }
           }
 
-          socketRef.current.close();
+          setQuotes([]);
         }
         return updatedQuotes;
       });
@@ -74,6 +76,7 @@ const App = () => {
     socketRef.current.onclose = () => {
       console.log("WebSocket connection closed");
       setIsConnected(false);
+      setIsLoading(false);
     };
   }, [quoteCount]);
 
@@ -82,7 +85,15 @@ const App = () => {
   };
 
   const handleShowStats = async () => {
-    await fetchStatsFromBackend(setStats);
+    setIsLoading(true);
+    try {
+      const fetchedStats = await fetchStatsFromBackend();
+      setStats(fetchedStats);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,6 +104,8 @@ const App = () => {
         Start
       </Button>
       <Button onClick={handleShowStats}>Show Stats</Button>
+
+      {isLoading && <LoadingIndicator>Loading...</LoadingIndicator>}
 
       {stats && <StatsDisplay stats={stats} />}
     </AppContainer>
@@ -119,4 +132,10 @@ const Button = styled.button`
   &:disabled {
     background-color: #c0c0c0;
   }
+`;
+
+const LoadingIndicator = styled.div`
+  margin: 20px;
+  font-size: 1.2em;
+  color: #007bff;
 `;

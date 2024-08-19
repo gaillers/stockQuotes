@@ -16,17 +16,23 @@ export const sendStatsToBackend = async (stats) => {
 };
 
 export const fetchStatsFromBackend = async (setStats) => {
-    try {
-      const response = await fetch("http://localhost-backend/get-stats", { // PHP
-      // const response = await fetch("http://localhost:3030/get-stats", { // NodeJS
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
-      setStats(result.data);
-    } catch (error) {
-      console.error("Error fetching stats:", error);
+  try {
+    const response = await fetch("http://localhost-backend/get-stats", { // PHP
+    // const response = await fetch("http://localhost:3030/get-stats", { // NodeJS
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
     }
-  };
+
+    const result = await response.json();
+    return result.data; // Return the dat
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    throw error; 
+  }
+};
