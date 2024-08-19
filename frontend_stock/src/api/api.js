@@ -24,15 +24,10 @@ export const fetchStatsFromBackend = async (setStats) => {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
+    
     const result = await response.json();
-    return result.data; // Return the dat
+    setStats(result.data);
   } catch (error) {
     console.error("Error fetching stats:", error);
-    throw error; 
   }
 };
