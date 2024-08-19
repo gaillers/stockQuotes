@@ -28,10 +28,11 @@ export const fetchStatsFromBackend = async (setStats) => {
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
-    
+
     const result = await response.json();
-    setStats(result.data);
+    return result.data; // Return the dat
   } catch (error) {
     console.error("Error fetching stats:", error);
+    throw error; 
   }
 };

@@ -8,25 +8,24 @@ import { sendStatsToBackend, fetchStatsFromBackend } from "@api/api";
 import { calculateStatistics } from "@utils/utils";
 
 const App = () => {
-  const [quoteCount, setQuoteCount] = useState(100);
+  const [quoteCount, setQuoteCount] = useState(1000);
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const socketRef = useRef(null);
   const [quotes, setQuotes] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const startTimeRef = useRef(null);
   const lastStatsRef = useRef(null);
   const isFetchingStatsRef = useRef(false);
+  const socketRef = useRef(null);
 
   const handleStart = useCallback(() => {
     console.log("Starting WebSocket connection");
-    
+
     if (socketRef.current) {
       socketRef.current.close();
     }
 
     setIsLoading(true);
-
     startTimeRef.current = Date.now();
     socketRef.current = new WebSocket(
       "wss://trade.termplat.com:8800/?password=1234"
@@ -64,7 +63,7 @@ const App = () => {
             }
           }
 
-          socketRef.current.close();
+          setQuotes([]);
         }
         return updatedQuotes;
       });
@@ -86,7 +85,15 @@ const App = () => {
   };
 
   const handleShowStats = async () => {
-    await fetchStatsFromBackend(setStats);
+    setIsLoading(true);
+    try {
+      const fetchedStats = await fetchStatsFromBackend();
+      setStats(fetchedStats);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
