@@ -15,7 +15,7 @@ const App = () => {
   const [isConnected, setIsConnected] = useState(false);
   const startTimeRef = useRef(null);
   const lastStatsRef = useRef(null);
-  const isFetchingStatsRef = useRef(false); 
+  const isFetchingStatsRef = useRef(false);
 
   const handleStart = useCallback(() => {
     console.log("Starting WebSocket connection");
